@@ -1,0 +1,18 @@
+complexity:
+  LongParameterList:
+    constructorThreshold: 100
+    ignoreDefaultParameters: true
+style:
+  MagicNumber:
+    ignoreEnums: true
+    ignoreAnnotation: true
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+  WildcardImport:
+    active: false
+formatting:
+  NoWildcardImports:
+    active: false
+empty-blocks:
+  EmptyFunctionBlock:
+    ignoreOverridden: true
