@@ -1,5 +1,6 @@
 package com.company.autocontrol.config
 
+import com.company.autocontrol.enums.Role
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -24,9 +25,21 @@ class SecurityConfiguration {
             .csrf()
             .disable()
 
-        http.authorizeHttpRequests().requestMatchers("/api/**").permitAll()
+        http.authorizeHttpRequests()
+            .requestMatchers("/v1/user/**")
+            .hasAnyRole(Role.USER.name, Role.ADMIN.name)
+            .anyRequest()
+            .authenticated()
 
-        http.authorizeHttpRequests().anyRequest().authenticated()
+        http.authorizeHttpRequests()
+            .requestMatchers("/v1/admin/**")
+            .hasAnyRole(Role.ADMIN.name)
+            .anyRequest()
+            .authenticated()
+
+        http.authorizeHttpRequests()
+            .anyRequest()
+            .authenticated()
 
         http.exceptionHandling { exceptions ->
             exceptions

@@ -1,5 +1,6 @@
 package com.company.autocontrol.entity
 
+import com.company.autocontrol.enums.BookingType
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
