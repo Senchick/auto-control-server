@@ -7,5 +7,5 @@ import org.springframework.stereotype.Service
 @Service
 class BookingService {
     @Autowired
-    lateinit var bookingRepository: BookingRepository
+    private lateinit var bookingRepository: BookingRepository
 }

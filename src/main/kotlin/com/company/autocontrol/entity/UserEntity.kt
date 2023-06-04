@@ -9,7 +9,7 @@ import org.hibernate.validator.constraints.Length
 class UserEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long? = null,
 
     @Length(min = 2, max = 16)
     @Column(length = 16)
@@ -23,8 +23,7 @@ class UserEntity(
     @Column(length = 32)
     val login: String,
 
-    @Length(min = 8, max = 32)
-    @Column(length = 32)
+    @Column(length = 128)
     val password: String,
 
     @Enumerated(EnumType.STRING)
