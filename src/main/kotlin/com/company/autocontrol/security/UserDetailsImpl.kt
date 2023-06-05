@@ -5,7 +5,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 
 class UserDetailsImpl(private val userEntity: UserEntity) : UserDetails {
-    override fun getAuthorities() = listOf(SimpleGrantedAuthority(userEntity.role.name))
+    override fun getAuthorities() = listOf(SimpleGrantedAuthority(userEntity.role.roleName))
     override fun getPassword() = userEntity.password
     override fun getUsername() = userEntity.login
     override fun isAccountNonExpired() = true
