@@ -17,6 +17,5 @@ class AdminBookingController {
 
     @PutMapping
     fun putBooking() {
-
     }
 }

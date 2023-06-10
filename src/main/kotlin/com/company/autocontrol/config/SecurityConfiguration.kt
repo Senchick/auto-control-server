@@ -4,7 +4,6 @@ import com.company.autocontrol.dto.UserDto
 import com.company.autocontrol.enums.Role
 import com.company.autocontrol.security.UserDetailsServiceImpl
 import com.company.autocontrol.service.UserService
-import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -43,12 +42,9 @@ class SecurityConfiguration {
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
-        http.cors()
-            .and()
-            .csrf()
-            .and()
-            .formLogin()
-            .disable()
+        http.cors { it.disable() }
+            .csrf { it.disable() }
+            .formLogin { it.disable() }
 
         http.authorizeHttpRequests { authorize ->
             authorize.requestMatchers("/v1/user/**")
@@ -64,13 +60,13 @@ class SecurityConfiguration {
                 .authenticated()
         }.httpBasic()
 
-        http.exceptionHandling { exceptions ->
+        /*http.exceptionHandling { exceptions ->
             exceptions
                 .authenticationEntryPoint { request, response, authException ->
                     logger.error("Authentication error", authException)
                     response?.sendError(HttpServletResponse.SC_FORBIDDEN)
                 }
-        }
+        }*/
 
         return http.build()
     }
