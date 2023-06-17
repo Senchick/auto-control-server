@@ -19,6 +19,10 @@ class UserEntity(
     @Column(length = 16)
     val surname: String,
 
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    val department: DepartmentEntity?,
+
     @Length(min = 4, max = 32)
     @Column(length = 32)
     val login: String,
