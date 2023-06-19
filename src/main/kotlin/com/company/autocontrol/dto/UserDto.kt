@@ -26,5 +26,9 @@ data class UserDto(
     @field:Size(min = 2, max = 16, message = "{surname.size}")
     val surname: String = "",
 
+    @field:NotEmpty(message = "{department.notEmpty}")
+    @field:Size(min = 5, max = 64, message = "{department.size}")
+    val department: String = "",
+
     val role: Role = Role.USER
 )

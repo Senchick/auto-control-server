@@ -21,7 +21,8 @@ class UserService {
             password = passwordEncoder.encode(userDto.password),
             firstname = userDto.firstname,
             surname = userDto.surname,
-            role = userDto.role
+            role = userDto.role,
+            department = userDto.department
         )
 
         userRepository.save(user)

@@ -19,6 +19,9 @@ class UserEntity(
     @Column(length = 16)
     val surname: String,
 
+    @Column(length = 64)
+    val department: String,
+
     @Length(min = 4, max = 32)
     @Column(length = 32)
     val login: String,
