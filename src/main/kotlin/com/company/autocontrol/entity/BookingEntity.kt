@@ -1,5 +1,6 @@
 package com.company.autocontrol.entity
 
+import com.company.autocontrol.enums.BookingType
 import jakarta.persistence.*
 import java.time.LocalDateTime
 
@@ -8,7 +9,7 @@ import java.time.LocalDateTime
 class BookingEntity(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long,
+    val id: Long? = null,
 
     @ManyToOne
     @JoinColumn(name = "road_section_id")
