@@ -2,6 +2,7 @@ package com.company.autocontrol.service
 
 import com.company.autocontrol.dto.UserDto
 import com.company.autocontrol.entity.UserEntity
+import com.company.autocontrol.exception.UserNotFoundException
 import com.company.autocontrol.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -30,5 +31,19 @@ class UserService {
 
     fun findByLogin(login: String): UserEntity? {
         return userRepository.findByLogin(login)
+    }
+
+    fun deleteByLogin(login: String): Boolean {
+        return userRepository.deleteByLogin(login) == 0L // true = error
+    }
+
+    fun enableByLogin(login: String, enable: Boolean): Boolean {
+        val user = findByLogin(login) ?: throw UserNotFoundException()
+
+        user.enabled = enable
+
+        userRepository.save(user)
+
+        return enable
     }
 }

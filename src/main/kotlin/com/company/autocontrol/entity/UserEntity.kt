@@ -29,6 +29,7 @@ class UserEntity(
     @Column(length = 128)
     val password: String,
 
-    @Enumerated(EnumType.STRING)
-    val role: Role
+    @Enumerated(EnumType.ORDINAL)
+    val role: Role,
+    var enabled: Boolean = true
 )

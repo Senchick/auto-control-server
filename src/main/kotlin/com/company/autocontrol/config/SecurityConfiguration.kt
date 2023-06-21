@@ -1,9 +1,12 @@
 package com.company.autocontrol.config
 
 import com.company.autocontrol.dto.UserDto
+import com.company.autocontrol.dto.error.ErrorResponse
 import com.company.autocontrol.enums.Role
 import com.company.autocontrol.security.UserDetailsServiceImpl
 import com.company.autocontrol.service.UserService
+import com.fasterxml.jackson.databind.ObjectMapper
+import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -34,6 +37,9 @@ class SecurityConfiguration {
     @Value("\${autocontrol.admin.surname}")
     private lateinit var adminSurname: String
 
+    @Value("\${autocontrol.admin.department}")
+    private lateinit var adminDepartment: String
+
     @Autowired
     private lateinit var userDetailsServiceImpl: UserDetailsServiceImpl
 
@@ -45,6 +51,28 @@ class SecurityConfiguration {
         http.cors { it.disable() }
             .csrf { it.disable() }
             .formLogin { it.disable() }
+
+        http.exceptionHandling()
+            .accessDeniedHandler { _, response, _ ->
+                response.contentType = "application/json"
+                response.status = HttpServletResponse.SC_FORBIDDEN
+
+                val errorResponse = ErrorResponse<Nothing>(
+                    message = "Access Denied"
+                )
+
+                response.outputStream.println(ObjectMapper().writeValueAsString(errorResponse))
+            }
+            .authenticationEntryPoint { _, response, _ ->
+                response.contentType = "application/json"
+                response.status = HttpServletResponse.SC_UNAUTHORIZED
+
+                val errorResponse = ErrorResponse<Nothing>(
+                    message = "Bad Credentials"
+                )
+
+                response.outputStream.println(ObjectMapper().writeValueAsString(errorResponse))
+            }
 
         http.authorizeHttpRequests { authorize ->
             authorize.requestMatchers("/v1/user/**")
@@ -59,14 +87,6 @@ class SecurityConfiguration {
             authorize.anyRequest()
                 .authenticated()
         }.httpBasic()
-
-        /*http.exceptionHandling { exceptions ->
-            exceptions
-                .authenticationEntryPoint { request, response, authException ->
-                    logger.error("Authentication error", authException)
-                    response?.sendError(HttpServletResponse.SC_FORBIDDEN)
-                }
-        }*/
 
         return http.build()
     }
@@ -90,6 +110,7 @@ class SecurityConfiguration {
                         password = adminPassword,
                         firstname = adminFirstname,
                         surname = adminSurname,
+                        department = adminDepartment,
                         role = Role.ADMIN
                     )
                 )
