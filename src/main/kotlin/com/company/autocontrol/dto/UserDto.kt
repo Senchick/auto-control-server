@@ -30,5 +30,5 @@ data class UserDto(
     @field:Size(min = 5, max = 64, message = "{department.size}")
     val department: String = "",
 
-    val role: Role = Role.USER
+    val role: Role = Role.USER,
 )

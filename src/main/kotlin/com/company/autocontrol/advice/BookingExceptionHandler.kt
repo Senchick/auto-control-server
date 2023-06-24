@@ -22,7 +22,7 @@ class BookingExceptionHandler {
 
     @ExceptionHandler(BookingConflictException::class)
     fun handleBookingConflictException(e: BookingConflictException): ResponseEntity<ErrorResponse<Nothing>> {
-        val response = ErrorResponse<Nothing>(message = "Booking conflict.")
+        val response = ErrorResponse<Nothing>(message = e.message ?: "Booking conflict.")
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response)
     }

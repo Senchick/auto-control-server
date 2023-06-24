@@ -21,6 +21,7 @@ class UserController {
         val login = SecurityContextHolder.getContext().authentication.name
         val user = userService.findByLogin(login) ?: throw UserNotFoundException()
         val dto = UserInfoDto(
+            id = user.id!!,
             login = user.login,
             firstname = user.firstname,
             surname = user.surname,

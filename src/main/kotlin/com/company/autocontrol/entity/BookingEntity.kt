@@ -21,13 +21,16 @@ class BookingEntity(
     val author: UserEntity?,
 
     @Column(length = 4096)
-    val comment: String,
+    var comment: String,
 
-    val fromInterval: LocalDateTime,
-    val toInterval: LocalDateTime,
+    var fromInterval: LocalDateTime,
+    var toInterval: LocalDateTime,
+
+    val createdDate: LocalDateTime = LocalDateTime.now(),
+    var date: LocalDateTime,
 
     @Enumerated(EnumType.ORDINAL)
-    val bookingStatus: BookingStatus,
+    var bookingStatus: BookingStatus,
 
     @Enumerated(EnumType.ORDINAL)
     val bookingType: BookingType

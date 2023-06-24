@@ -1,5 +1,5 @@
 package com.company.autocontrol.exception
 
-class BookingConflictException : RuntimeException() {
+class BookingConflictException(message: String) : RuntimeException(message) {
 
 }
