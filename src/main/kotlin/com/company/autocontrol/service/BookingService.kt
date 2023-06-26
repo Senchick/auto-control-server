@@ -1,6 +1,8 @@
 package com.company.autocontrol.service
 
 import com.company.autocontrol.dto.BookingDto
+import com.company.autocontrol.dto.BookingOutputDto
+import com.company.autocontrol.dto.UserInfoDto
 import com.company.autocontrol.entity.BookingEntity
 import com.company.autocontrol.enums.BookingStatus
 import com.company.autocontrol.enums.BookingType
@@ -13,6 +15,7 @@ import com.company.autocontrol.repository.BookingRepository
 import com.company.autocontrol.repository.RoadSectionRepository
 import com.company.autocontrol.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -28,6 +31,32 @@ class BookingService {
     private lateinit var userRepository: UserRepository
 
     fun findAll(): List<BookingEntity> = bookingRepository.findAll()
+    fun findAllByDateAndByRoadSection(
+        date: LocalDateTime,
+        roadSectionId: Long
+    ): List<BookingOutputDto> = bookingRepository.findAllByDateAndRoadSectionId(date.roundToDay(), roadSectionId).map {
+        BookingOutputDto(
+            id = it.id!!,
+            date = it.date,
+            from = it.fromInterval,
+            to = it.toInterval,
+            roadSectionId = it.roadSection.id!!,
+            bookingType = it.bookingType,
+            bookingStatus = it.bookingStatus,
+            createdDate = it.createdDate,
+            comment = it.comment,
+            author = with(it.author) {
+                UserInfoDto(
+                    id = id!!,
+                    login = login,
+                    firstname = firstname,
+                    surname = surname,
+                    department = department,
+                    role = role
+                )
+            }
+        )
+    }
     fun approve(id: Long) {
         val booking = bookingRepository.findById(id)
             .orElseThrow { BookingNotFoundException() }
@@ -47,30 +76,34 @@ class BookingService {
     }
 
     private fun roundToHalfHour(time: LocalDateTime): LocalDateTime {
-        val minute = if (time.minute < 30) 0 else 30
+        val minute = if (time.minute < HALF_OF_HOUR) 0 else HALF_OF_HOUR
         return time.withMinute(minute).withSecond(0).withNano(0)
     }
 
-    fun createBooking(dto: BookingDto) {
-        val user = userRepository.findById(dto.userId).orElseThrow { throw UserNotFoundException() }
+    private fun LocalDateTime.roundToDay(): LocalDateTime = withHour(0)
+        .withMinute(0)
+        .withSecond(0)
+        .withNano(0)
+
+    fun createBooking(dto: BookingDto): Long {
+        val login = SecurityContextHolder.getContext().authentication.name
+
+        val user = userRepository.findByLogin(login) ?: throw UserNotFoundException()
+
         val roadSection = roadSectionRepository.findById(dto.roadSectionId).orElseThrow {
             throw RoadSectionNotFoundException()
         }
 
         if (user.role == Role.USER && dto.bookingType == BookingType.CLOSE) {
-            throw BookingConflictException("with the USER role, you cannot create CLOSE")
+            throw BookingConflictException("With the USER role, you cannot create CLOSE")
         }
 
         val fromRounded = roundToHalfHour(dto.from)
         val toRounded = roundToHalfHour(dto.to)
-        val dateRounded = dto.date
-            .withHour(0)
-            .withMinute(0)
-            .withSecond(0)
-            .withNano(0)
+        val dateRounded = dto.date.roundToDay()
 
-        if (fromRounded.isBefore(dto.date.withHour(6).withMinute(0)) ||
-            toRounded.isAfter(dto.date.withHour(23).withMinute(0))
+        if (fromRounded.isBefore(fromRounded.withHour(6).withMinute(0)) ||
+            toRounded.isAfter(toRounded.withHour(23).withMinute(0))
         ) {
             throw BookingConflictException("Booking time must be between 6:00 and 23:00")
         }
@@ -86,19 +119,25 @@ class BookingService {
             throw BookingConflictException("Cannot create a booking as there is a closed booking in this interval")
         }
 
-        if (dto.bookingType == BookingType.MONO && overlappingBookings.isNotEmpty()) {
+        if (dto.bookingType == BookingType.MONO && overlappingBookings.any {
+                it.bookingType == BookingType.MONO && it.bookingStatus == BookingStatus.WAITING
+            }
+        ) {
             throw BookingConflictException(
                 "Cannot create a mono booking as there is already a booking in this interval"
             )
         }
 
-        if (dto.bookingType == BookingType.GENERAL && overlappingBookings.any { it.author?.id == dto.userId }) {
+        if (overlappingBookings.any {
+                it.author.id == user.id && it.bookingStatus == BookingStatus.APPROVED
+            }
+        ) {
             throw BookingConflictException("Cannot create a general booking from the same author in this interval")
         }
 
         val existingWaitingBooking = overlappingBookings.firstOrNull {
             it.bookingStatus == BookingStatus.WAITING &&
-                it.author?.id == dto.userId &&
+                it.author.id == user.id &&
                 it.bookingType == dto.bookingType
         }
 
@@ -108,7 +147,7 @@ class BookingService {
             existingWaitingBooking.toInterval = toRounded
             existingWaitingBooking.date = dateRounded
 
-            bookingRepository.save(existingWaitingBooking)
+            return bookingRepository.save(existingWaitingBooking).id!!
         } else {
             val newBooking = BookingEntity(
                 roadSection = roadSection,
@@ -121,7 +160,11 @@ class BookingService {
                 bookingType = dto.bookingType
             )
 
-            bookingRepository.save(newBooking)
+            return bookingRepository.save(newBooking).id!!
         }
+    }
+
+    companion object {
+        const val HALF_OF_HOUR = 30
     }
 }

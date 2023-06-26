@@ -18,7 +18,7 @@ class BookingEntity(
 
     @ManyToOne
     @JoinColumn(name = "author_id")
-    val author: UserEntity?,
+    val author: UserEntity,
 
     @Column(length = 4096)
     var comment: String,
